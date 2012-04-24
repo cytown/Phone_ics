@@ -494,5 +494,14 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="AdvancedSettings$Settings"
+                android:label="@string/as_advanced_settings"
+                android:configChanges="orientation|screenSize|keyboardHidden"
+                android:theme="@android:style/Theme.Holo.DialogWhenLarge">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+
     </application>
 </manifest>

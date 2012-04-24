@@ -83,6 +83,23 @@
           android:dialogTitle="@string/voicemail_notification_vibarte_when_dialog_title" />
   </PreferenceCategory>
 
+    <PreferenceCategory android:key="button_advanced_category_key"
+        android:title="@string/as_advanced_settings"
+        android:persistent="false">
+
+        <PreferenceScreen
+            android:key="button_advanced_setting_key"
+            android:title="@string/as_advanced_settings_title"
+            android:summary="@string/as_advanced_settings_sum"
+            android:persistent="false">
+
+            <intent android:action="android.intent.action.MAIN"
+                android:targetPackage="com.android.phone"
+                android:targetClass="com.android.phone.AdvancedSettings$Settings" />
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+
   <PreferenceCategory android:key="button_misc_category_key"
         android:title="@string/other_settings"
         android:persistent="false" />

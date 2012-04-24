@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2012 Cytown(cytown@gmail.com)
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- Advanced settings -->
+    <string name="as_advanced_settings">"ADVANCED SETTINGS"</string>
+
+    <string name="as_advanced_settings_title">"Advanced settings v1"</string>
+    <string name="as_advanced_settings_sum">"Some settings to make vibrate on call is answered etc."</string>
+
+    <string name="as_vibrate_on_answer">"Vibrate on answer"</string>
+    <string name="as_vibrate_on_answer_sum">"Vibrate when a call is answered"</string>
+    <string name="as_vibrate_on_hangup">"Vibrate on hangup"</string>
+    <string name="as_vibrate_on_hangup_sum">"Vibrate when a call has ended"</string>
+    <string name="as_vibrate_on_45">"Vibrate every 45 seconds"</string>
+    <string name="as_vibrate_on_45_sum">"Vibrate every 45 seconds during outgoing calls"</string>
+    <string name="as_vibrate_on_call_waiting">"Vibrate call waiting"</string>
+    <string name="as_vibrate_on_call_waiting_sum">"Vibrate when there is incoming call waiting"</string>
+    <string name="as_show_organ">"Show nick/organization"</string>
+    <string name="as_show_organ_sum">"Nickname/Organization will be shown on in-call screen."</string>
+    <string name="as_silence_on_turnover">"Turn over silence"</string>
+    <string name="as_silence_on_turnover_sum">"Turn over to silence ring"</string>
+    <string name="as_enable_blacklist">"Enable black list feature"</string>
+    <string name="as_enable_blacklist_sum">"When enabled, the incoming call will check black list first."</string>
+    <string name="as_blacklist_settings">"Black List Settings"</string>
+    <string name="as_blacklist_settings_sum">"Manager the Black List"</string>
+    <string name="as_">""</string>
+</resources>

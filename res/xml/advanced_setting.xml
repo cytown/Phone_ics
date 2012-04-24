@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (C) 2012 Cytown(cytown@gmail.com)
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+        android:persistent="false">
+
+    <PreferenceCategory
+        android:key="pref_advanced_settings"
+        android:title="@string/as_advanced_settings"
+        android:persistent="false">
+
+       <CheckBoxPreference
+            android:key="button_vibrate_on_answer"
+            android:title="@string/as_vibrate_on_answer"
+            android:persistent="true"
+            android:summary="@string/as_vibrate_on_answer_sum" />
+
+       <CheckBoxPreference
+            android:key="button_vibrate_on_hangup"
+            android:title="@string/as_vibrate_on_hangup"
+            android:persistent="true"
+            android:summary="@string/as_vibrate_on_hangup_sum" />
+
+       <CheckBoxPreference
+            android:key="button_vibrate_on_45"
+            android:title="@string/as_vibrate_on_45"
+            android:persistent="true"
+            android:summary="@string/as_vibrate_on_45_sum" />
+
+       <CheckBoxPreference
+            android:key="button_vibrate_on_call_waiting"
+            android:title="@string/as_vibrate_on_call_waiting"
+            android:persistent="true"
+            android:summary="@string/as_vibrate_on_call_waiting_sum" />
+
+       <CheckBoxPreference
+            android:key="button_show_organ"
+            android:title="@string/as_show_organ"
+            android:persistent="true"
+            android:summary="@string/as_show_organ_sum" />
+
+       <CheckBoxPreference
+            android:key="button_silence_on_turnover"
+            android:title="@string/as_silence_on_turnover"
+            android:persistent="true"
+            android:summary="@string/as_silence_on_turnover_sum" />
+
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="pref_blacklist_settings"
+        android:title="@string/as_blacklist_settings"
+        android:persistent="false">
+
+        <CheckBoxPreference
+            android:key="button_enable_blacklist"
+            android:title="@string/as_enable_blacklist"
+            android:persistent="true"
+            android:summary="@string/as_enable_blacklist_sum" />
+
+        <PreferenceScreen
+            android:title="@string/as_blacklist_settings"
+            android:dependency="button_enable_blacklist"
+            android:summary="@string/as_blacklist_settings_sum"
+            android:persistent="false">
+
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+</PreferenceScreen>
