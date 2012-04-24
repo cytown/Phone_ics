@@ -2572,4 +2572,23 @@ public class PhoneUtils {
 
         Log.d(LOG_TAG, "############## END dumpCallManager() ###############");
     }
+
+    static Call getCurrentCall(Phone phone) {
+        Call ringing = phone.getRingingCall();
+        Call fg = phone.getForegroundCall();
+        Call bg = phone.getBackgroundCall();
+        return (!ringing.isIdle()) ? ringing : ((!fg.isIdle()) ? fg : ((!bg.isIdle()) ? bg : fg));
+    }
+
+    static Connection getConnection(Phone phone, Call call) {
+        if (call == null) return null;
+        Connection conn = null;
+        if (phone.getPhoneName().equals("CDMA")) {
+            conn = call.getLatestConnection();
+        } else {
+            conn = call.getEarliestConnection();
+        }
+        return conn;
+    }
+
 }

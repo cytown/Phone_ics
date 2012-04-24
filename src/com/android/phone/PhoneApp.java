@@ -62,6 +62,10 @@ import com.android.internal.telephony.cdma.TtyIntent;
 import com.android.phone.OtaUtils.CdmaOtaScreenState;
 import com.android.server.sip.SipService;
 
+import android.os.Vibrator;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+
 /**
  * Top-level Application class for the Phone app.
  */
@@ -84,7 +88,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
      *
      * ***** DO NOT SUBMIT WITH DBG_LEVEL > 0 *************
      */
-    /* package */ static final int DBG_LEVEL = 0;
+    /* package */ static final int DBG_LEVEL = 2;
 
     private static final boolean DBG =
             (PhoneApp.DBG_LEVEL >= 1) && (SystemProperties.getInt("ro.debuggable", 0) == 1);
@@ -233,6 +237,51 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
     private boolean mTtyEnabled;
     // Current TTY operating mode selected by user
     private int mPreferredTtyMode = Phone.TTY_MODE_OFF;
+
+    // add by cytown
+    // ======== start of modification ======
+    public static final String ACTION_VIBRATE_45 = "com.android.phone.PhoneApp.ACTION_VIBRATE_45";
+    public static final String ACTION_ADD_BLACK = "com.android.phone.PhoneApp.ACTION_ADD_BLACK";
+
+    private PowerManager.WakeLock mVibrateWakeLock;
+    private CallFeaturesSetting mSettings;
+    private static PendingIntent mVibrateIntent;
+    private static Vibrator mVibrator = null;
+    private static AlarmManager mAM;
+
+    public void startVib45(long callDurationMsec) {
+        if (VDBG) Log.i(LOG_TAG, "vibrate start @" + callDurationMsec);
+        stopVib45();
+        long nextalarm = SystemClock.elapsedRealtime() + ((callDurationMsec > 45000) ?
+                45000 + 60000 - callDurationMsec : 45000 - callDurationMsec);
+        if (VDBG) Log.i(LOG_TAG, "am at: " + nextalarm);
+        mAM.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, nextalarm, mVibrateIntent);
+    }
+
+    public void stopVib45() {
+        if (VDBG) Log.i(LOG_TAG, "vibrate stop @" + SystemClock.elapsedRealtime());
+        mAM.cancel(mVibrateIntent);
+    }
+
+    private final class TriVibRunnable implements Runnable {
+        private int v1, p1, v2;
+        TriVibRunnable(int a, int b, int c) {
+            v1 = a; p1 = b; v2 = c;
+        }
+        public void run() {
+            if (DBG) Log.i(LOG_TAG, "vibrate " + v1 + ":" + p1 + ":" + v2);
+            mVibrateWakeLock.acquire();
+            if (v1 > 0) mVibrator.vibrate(v1);
+            if (p1 > 0) SystemClock.sleep(p1);
+            if (v2 > 0) mVibrator.vibrate(v2);
+            mVibrateWakeLock.release();
+        }
+    }
+
+    public void vibrate(int v1, int p1, int v2) {
+        mHandler.post(new TriVibRunnable(v1, p1, v2));
+    }
+    // ======== end of modification ======
 
     /**
      * Set the restore mute state flag. Used when we are setting the mute state
@@ -535,6 +584,8 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
                 intentFilter.addAction(TtyIntent.TTY_PREFERRED_MODE_CHANGE_ACTION);
             }
             intentFilter.addAction(AudioManager.RINGER_MODE_CHANGED_ACTION);
+            intentFilter.addAction(ACTION_VIBRATE_45);
+            intentFilter.addAction(ACTION_ADD_BLACK);
             registerReceiver(mReceiver, intentFilter);
 
             // Use a separate receiver for ACTION_MEDIA_BUTTON broadcasts,
@@ -559,6 +610,13 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
             // audio-mode-related state of our own) is initialized
             // correctly, given the current state of the phone.
             PhoneUtils.setAudioMode(mCM);
+
+            // add by cytown
+            AdvancedSettings.init();
+            mVibrator = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+            mAM = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+            mVibrateIntent = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_VIBRATE_45), 0);
+            mVibrateWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, LOG_TAG);
         }
 
         if (TelephonyCapabilities.supportsOtasp(phone)) {
@@ -573,6 +631,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
 
         // start with the default value to set the mute state.
         mShouldRestoreMuteOnInCallResume = false;
+
 
         // TODO: Register for Cdma Information Records
         // phone.registerCdmaInformationRecord(mHandler, EVENT_UNSOL_CDMA_INFO_RECORD, null);
@@ -1516,6 +1575,13 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
                 if (ringerMode == AudioManager.RINGER_MODE_SILENT) {
                     notifier.silenceRinger();
                 }
+            // Vibrate 45 sec receiver add by cytown
+            } else if (action.equals(ACTION_VIBRATE_45)) {
+                if (VDBG) Log.d(LOG_TAG, "mReceiver: ACTION_VIBRATE_45");
+                mAM.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 60000,
+                        mVibrateIntent);
+                if (DBG) Log.i(LOG_TAG, "vibrate on 45 sec");
+                vibrate(70, 70, -1);
             }
         }
     }

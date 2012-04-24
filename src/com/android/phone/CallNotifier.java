@@ -459,6 +459,9 @@ public class CallNotifier extends Handler
         if (PhoneUtils.isRealIncomingCall(state)) {
             startIncomingCallQuery(c);
         } else {
+            if (AdvancedSettings.isVibrateOnCallWaiting) {
+                mApplication.vibrate(200,300,500);
+            }
             if (VDBG) log("- starting call waiting tone...");
             if (mCallWaitingTonePlayer == null) {
                 mCallWaitingTonePlayer = new InCallTonePlayer(InCallTonePlayer.TONE_CALL_WAITING);
@@ -804,6 +807,23 @@ public class CallNotifier extends Handler
             }
 
             if (VDBG) log("onPhoneStateChanged: OFF HOOK");
+
+            Call call = PhoneUtils.getCurrentCall(fgPhone);
+            Connection c = PhoneUtils.getConnection(fgPhone, call);
+            if (VDBG) PhoneUtils.dumpCallState(fgPhone);
+            Call.State cstate = call.getState();
+            if (cstate == Call.State.ACTIVE && !c.isIncoming()) {
+                long callDurationMsec = c.getDurationMillis();
+                if (VDBG) Log.i(LOG_TAG, "duration is " + callDurationMsec);
+                if (AdvancedSettings.isVibrateOnAnswer && callDurationMsec < 200) {
+                    mApplication.vibrate(100,0,0);
+                }
+                if (AdvancedSettings.isVibrateOn45) {
+                    callDurationMsec = callDurationMsec % 60000;
+                    mApplication.startVib45(callDurationMsec);
+                }
+            }
+
             // make sure audio is in in-call mode now
             PhoneUtils.setAudioMode(mCM);
 
@@ -1014,6 +1034,20 @@ public class CallNotifier extends Handler
             // Remove Call waiting timers
             removeMessages(CALLWAITING_CALLERINFO_DISPLAY_DONE);
             removeMessages(CALLWAITING_ADDCALL_DISABLE_TIMEOUT);
+        }
+
+        if (c != null) {
+//            Object o = c.getUserData();
+//            if (BLACKLIST.equals(o)) {
+//                if (VDBG) Log.i(LOG_TAG, "in blacklist so skip calllog");
+//                return;
+//            }
+            if (c.getDurationMillis() > 0 && AdvancedSettings.isVibrateOnHangup) {
+                mApplication.vibrate(50, 100, 50);
+            }
+            if (!c.isIncoming()) {
+                mApplication.stopVib45();
+            }
         }
 
         // Stop the ringer if it was ringing (for an incoming call that
