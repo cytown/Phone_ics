@@ -89,7 +89,8 @@
     <bool name="send_mic_mute_to_AudioManager">false</bool>
 
     <!-- Determines if device implements a noise suppression device for in call audio-->
-    <bool name="has_in_call_noise_suppression">false</bool>
+    <!-- Because we use this app in N1 and NS, so set this feature to true -->
+    <bool name="has_in_call_noise_suppression">true</bool>
 
     <!-- Determines if the current device should allow emergency numbers
          to be logged in the Call Log.
