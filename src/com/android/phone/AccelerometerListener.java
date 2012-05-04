@@ -33,7 +33,7 @@ import android.util.Log;
 public final class AccelerometerListener {
     private static final String TAG = "AccelerometerListener";
     private static final boolean DEBUG = true;
-    private static final boolean VDEBUG = false;
+    private static final boolean VDEBUG = true;
 
     private SensorManager mSensorManager;
     private Sensor mSensor;
@@ -48,12 +48,17 @@ public final class AccelerometerListener {
 
     private OrientationListener mListener;
 
+    private boolean mIsTurnOver = false;
+    private boolean mStartCheck = false;
+
     // Device orientation
     public static final int ORIENTATION_UNKNOWN = 0;
     public static final int ORIENTATION_VERTICAL = 1;
     public static final int ORIENTATION_HORIZONTAL = 2;
+    public static final int ORIENTATION_TURNOVER = 4;
 
     private static final int ORIENTATION_CHANGED = 1234;
+    private static final int TURNOVER_OCCURED = 2345;
 
     private static final int VERTICAL_DEBOUNCE = 100;
     private static final int HORIZONTAL_DEBOUNCE = 500;
@@ -75,11 +80,15 @@ public final class AccelerometerListener {
             if (enable) {
                 mOrientation = ORIENTATION_UNKNOWN;
                 mPendingOrientation = ORIENTATION_UNKNOWN;
+                mStartCheck = false;
                 mSensorManager.registerListener(mSensorListener, mSensor,
                         SensorManager.SENSOR_DELAY_NORMAL);
             } else {
                 mSensorManager.unregisterListener(mSensorListener);
                 mHandler.removeMessages(ORIENTATION_CHANGED);
+                if (mIsTurnOver) {
+                    mHandler.removeMessages(TURNOVER_OCCURED);
+                }
             }
         }
     }
@@ -95,12 +104,19 @@ public final class AccelerometerListener {
             // We will either start a new timer or cancel alltogether
             // if the orientation has not changed.
             mHandler.removeMessages(ORIENTATION_CHANGED);
+            mHandler.removeMessages(TURNOVER_OCCURED);
 
             if (mOrientation != orientation) {
                 // Set timer to send an event if the orientation has changed since its
                 // previously reported value.
                 mPendingOrientation = orientation;
-                Message m = mHandler.obtainMessage(ORIENTATION_CHANGED);
+                if (mIsTurnOver && !mStartCheck) {
+                    if (orientation == ORIENTATION_HORIZONTAL) {
+                        mStartCheck = true;
+                    }
+                    return;
+                }
+                Message m = mHandler.obtainMessage(mIsTurnOver ? TURNOVER_OCCURED : ORIENTATION_CHANGED);
                 // set delay to our debounce timeout
                 int delay = (orientation == ORIENTATION_VERTICAL ? VERTICAL_DEBOUNCE
                                                                  : HORIZONTAL_DEBOUNCE);
@@ -119,6 +135,15 @@ public final class AccelerometerListener {
         // ignore these events to avoid false horizontal positives.
         if (x == 0.0 || y == 0.0 || z == 0.0) return;
 
+        if (mIsTurnOver) {
+            if (Math.abs(x) < 2 && Math.abs(y) < 2 && z < -7) {
+                setOrientation(ORIENTATION_TURNOVER);
+            } else {
+                setOrientation(ORIENTATION_HORIZONTAL);
+            }
+            return;
+        }
+
         // magnitude of the acceleration vector projected onto XY plane
         double xy = Math.sqrt(x*x + y*y);
         // compute the vertical angle
@@ -128,6 +153,10 @@ public final class AccelerometerListener {
         int orientation = (angle >  VERTICAL_ANGLE ? ORIENTATION_VERTICAL : ORIENTATION_HORIZONTAL);
         if (VDEBUG) Log.d(TAG, "angle: " + angle + " orientation: " + orientation);
         setOrientation(orientation);
+    }
+
+    public void setTurnOver() {
+        mIsTurnOver = true;
     }
 
     SensorEventListener mSensorListener = new SensorEventListener() {
@@ -153,6 +182,19 @@ public final class AccelerometerListener {
                                     : "unknown")));
                     }
                     mListener.orientationChanged(mOrientation);
+                }
+                break;
+            case TURNOVER_OCCURED:
+                synchronized (this) {
+                    mOrientation = mPendingOrientation;
+                    if (DEBUG) {
+                        Log.d(TAG, "turnover: " +
+                            (mOrientation == ORIENTATION_TURNOVER));
+                    }
+                    if (mOrientation == ORIENTATION_TURNOVER) {
+                        mListener.orientationChanged(mOrientation);
+                        enable(false);
+                    }
                 }
                 break;
             }

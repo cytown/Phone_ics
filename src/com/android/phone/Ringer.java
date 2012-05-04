@@ -64,6 +64,9 @@ public class Ringer {
     private long mFirstRingEventTime = -1;
     private long mFirstRingStartTime = -1;
 
+    private boolean mTurnoverStarted = false;
+    private AccelerometerListener mAccelerometerListener = null;
+
     /**
      * Initialize the singleton Ringer instance.
      * This is only done once, at startup, from PhoneApp.onCreate().
@@ -146,9 +149,9 @@ public class Ringer {
             try {
                 if (PhoneApp.getInstance().showBluetoothIndication()) {
                     mPowerManager.setAttentionLight(true, 0x000000ff);
-		} else {
+                } else {
                     mPowerManager.setAttentionLight(true, 0x00ffffff);
-		}
+                }
             } catch (RemoteException ex) {
                 // the other end of this binder call is in the system process.
             }
@@ -190,7 +193,33 @@ public class Ringer {
                     mFirstRingEventTime = SystemClock.elapsedRealtime();
                 }
             }
+            startSensor();
         }
+    }
+
+    private void startSensor() {
+        if (AdvancedSettings.isSilenceTurnover && !mTurnoverStarted) {
+            if (mAccelerometerListener == null) {
+                final PhoneApp app = PhoneApp.getInstance();
+                mAccelerometerListener = new AccelerometerListener(app,
+                        new AccelerometerListener.OrientationListener() {
+                            @Override
+                            public void orientationChanged(int orientation) {
+                                app.notifier.silenceRinger();
+                            }
+                        });
+                mAccelerometerListener.setTurnOver();
+            }
+            mAccelerometerListener.enable(true);
+            mTurnoverStarted = true;
+        }
+    }
+
+    private void stopSensor() {
+        if (mTurnoverStarted && mAccelerometerListener != null) {
+            mAccelerometerListener.enable(false);
+        }
+        mTurnoverStarted = false;
     }
 
     boolean shouldVibrate() {
@@ -234,6 +263,7 @@ public class Ringer {
             }
             // Also immediately cancel any vibration in progress.
             mVibrator.cancel();
+            stopSensor();
         }
     }
 
